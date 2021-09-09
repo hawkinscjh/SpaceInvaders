@@ -204,7 +204,7 @@ while running:
         collision = isCollision(enemyX[i], enemyY[i], bulletX, bulletY)
         # Reset bullet_state to ready, increase score, and respawn enemy
         if collision:
-            explosion_sound = mixer.Sound('explosion.wav')
+            explosion_sound = mixer.Sound('invaderkilled.wav')
             explosion_sound.play()
             bulletY = 480
             bullet_state = "ready"
