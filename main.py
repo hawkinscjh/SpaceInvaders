@@ -1,3 +1,16 @@
+# Future changes to make:
+# (1) Have enemies spawn and move uniformly
+# (2) When all enemies are defeated, move on to Level 2
+# (3) Make Level 2 slightly harder than Level 1
+# (4) After Level 2, move on to Level 3
+# (5) Make Level 3 a boss battle of some kind
+# (6) Implement a pause feature
+# (7) Improve points: Maybe double points for 3 hits without a miss?
+# (8) Allow enemies to randomly drop bombs
+# (9) A way to track lives (3 lives is typical, then game over)
+# (10) Game over when an enemy runs into you, not when they move just to 480 Y-axis
+
+
 import pygame
 from pygame import mixer    # for music
 import random
