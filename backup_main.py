@@ -9,7 +9,6 @@
 # (8) Allow enemies to randomly drop bombs
 # (9) A way to track lives (3 lives is typical, then game over)
 # (10) Game over when an enemy runs into you, not when they move just to 480 Y-axis
-# (11) Rewrite game code to class objects to better organize code
 
 
 import pygame
@@ -17,81 +16,42 @@ import pygame
 from pygame import mixer
 import random
 import math
-import sys
-
-
-class Player(pygame.sprite.Sprite):
-    def __init__(self, picture_path, playerX, playerY, playerX_change):
-        super().__init__()
-        self.image = pygame.image.load(picture_path)
-        self.rect = self.image.get_rect()
-
-
-class Enemy(pygame.sprite.Sprite):
-    def __init__(self, picture_path):
-        super().__init__()
-        self.image = pygame.image.load(picture_path)
-        self.rect = self.image.get_rect()
-
-
-class Bullet(pygame.sprite.Sprite):
-    def __init__(self, picture_path):
-        super().__init__()
-        self.image = pygame.image.load(picture_path)
-        self.rect = self.image.get_rect()
-
-class GameState():
-    def __init__(self):
-        self.state = 'intro'
-
-    def intro(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and pygame.K_ESCAPE):
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                self.state = 'main_game'
-
-
-    def main_game(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and pygame.K_ESCAPE):
-                pygame.quit()
-                sys.exit()
-        
 
 # Initialize the pygame
 pygame.init()
-clock = pygame.time.Clock()
 
 # Create screen
 # Input height and width of display window (800 pixels wide, 600 pixels height)
-screen_width =  800
-screen_height = 600
-screen = pygame.display.set_mode((screen_width, screen_height))
+screen = pygame.display.set_mode((800, 600))
+
 # Background image source from: https://pixabay.com/
 background = pygame.image.load("background.png")
 
-# Music
-# Background music source from: https://www.classicgaming.cc/
+# Background sound source from: https://www.classicgaming.cc/
 mixer.music.load('spaceinvaders1.mpeg')
 # Loop music
 mixer.music.play(-1)
 
 # Title and Icon
 pygame.display.set_caption("Space Invaders Clone")
+
 # Icon must be 32x32 pixels and PNG
 # Set icon = png name
 # Icon image source from https://stock.adobe.com/
 icon = pygame.image.load("space_ship.png")
+
 # Load icon into pygame's display module
 pygame.display.set_icon(icon)
 
 # Player
 # Player image source from https://www.flaticon.com/
-playerImg = Player('player.png', 370, 480, 0)
-playerImg_group = pygame.sprite.Group()
-playerImg_group.add(playerImg)
+playerImg = pygame.image.load("player.png")
+
+# X and Y coordinates dependent on screen size (800 x 600 pixels)
+playerX = 370
+playerY = 480
+playerX_change = 0
+
 
 # Enemy
 # Store values in lists to allow for multiple enemies
