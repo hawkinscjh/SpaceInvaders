@@ -19,21 +19,43 @@ class Player(pygame.sprite.Sprite):
         # draw playerImg to given X and Y coordinate on screen
         screen.blit(playerPic, (pos_x, pos_y))
 
+    def playerMovement(self):
+        self.pos_x += self.x_change
+        self.rect.center = (self.pos_x, self.pos_y)
+        # Create boundaries to keep player from moving off screen
+        if self.pos_x <= 0:
+            self.pos_x = 0
+        elif self.pos_x >= 736:
+            self.pos_x = 736
+
+
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, picture_path, pos_x, pos_y, x_change, y_change):
         super().__init__()
         self.image = pygame.image.load(picture_path)
         self.rect = self.image.get_rect()
         self.rect.center = [pos_x, pos_y]
-        self.x_change = x_change
         self.pos_x = pos_x
         self.pos_y = pos_y
-        self.y_change = y_change
+        self.x_change = x_change
+        self.y_change = 20
 
     def enemyDraw(self, pos_x, pos_y):
         # blit = draw image to screen
         # draw playerImg to given X and Y coordinate on screen
         screen.blit(enemyPic, (pos_x, pos_y))
+
+    def enemyMovement(self):
+        # Update enemy's X and Y-coordinate positions
+        self.pos_x += self.x_change
+        self.rect.center = (self.pos_x, self.pos_y)
+        # Create boundaries to keep enemy from moving off screen
+        if self.pos_x <= 32:
+            self.x_change = 4
+            self.pos_y += self.y_change
+        elif self.pos_x >= 768:
+            self.x_change = -4
+            self.pos_y += self.y_change
 
 
 class GameState():
@@ -51,8 +73,7 @@ class GameState():
         # Drawing
         screen.blit(background, (0,0))
         screen.blit(ready_text, (screen_width/2 - 118, screen_height/2 - 40))
-        #crosshair_group.draw(screen)
-        #crosshair_group.update()
+
         pygame.display.flip()
 
     def main_game(self):
@@ -69,37 +90,23 @@ class GameState():
                    player.x_change = 0
 
         # Update player's X-coordinate position (movement)
-        player.pos_x += player.x_change
+        player.playerMovement()
 
-        # Create boundaries to keep player from moving off screen
-        if player.pos_x <= 0:
-            player.pos_x = 0
-        elif player.pos_x >= 736:
-            player.pos_x = 736
-
-        # Create boundaries to keep enemy from moving off screen
-            # Game Over
+        # Update enemy's X and Y-coordinate positions (movement)
+        for newEnemy in enemyGroup:
+            newEnemy.enemyMovement()     
+    
+        # Game Over
         if newEnemy.pos_y > 440:
-            newEnemy.pos_y = 2000
             self.state = 'game_over'
-
-        # Update enemy's X and Y-coordinate positions
-        newEnemy.pos_x += newEnemy.x_change
-        if newEnemy.pos_x <= 0:
-            newEnemy.x_change = 4
-            newEnemy.pos_y += newEnemy.y_change
-        elif newEnemy.pos_x >= 736:
-            newEnemy.x_change = -4
-            newEnemy.pos_y += newEnemy.y_change
 
         # Drawing
         screen.blit(background, (0,0))
-        #enemy_group.draw(screen)
-        #player_group.draw(screen)
-        player.playerDraw(player.pos_x, player.pos_y)
-        newEnemy.enemyDraw(newEnemy.pos_x, newEnemy.pos_y)
-        player.update()
-
+        #playerGroup.update()
+        #enemyGroup.update()
+        playerGroup.draw(screen)
+        enemyGroup.draw(screen)
+        
         # Update display module to show screen changes
         pygame.display.update()
 
@@ -112,8 +119,6 @@ class GameState():
         # Drawing
         screen.blit(background, (0,0))
         screen.blit(over_text, (screen_width/2 - 118, screen_height/2 - 40))
-        #crosshair_group.draw(screen)
-        #crosshair_group.update()
         pygame.display.flip()
 
     def state_manager(self):
@@ -153,8 +158,8 @@ over_text = center_font.render("GAME OVER", True, (255, 255, 255))
 # Player image source from https://www.flaticon.com/
 playerPic = pygame.image.load('player.png')
 player = Player('player.png', 370, 480, 0)
-#player_group = pygame.sprite.Group()
-#player_group.add(playerImg)
+playerGroup = pygame.sprite.Group()
+playerGroup.add(player)
 
 # Enemy
 # Enemy image source from https://www.flaticon.com/
@@ -163,7 +168,6 @@ enemyGroup = pygame.sprite.Group()
 for enemy in range(6):
     newEnemy = Enemy('enemy.png', random.randrange(0, screen_width), random.randrange(0, 150), 4, 20)
     enemyGroup.add(newEnemy)
-
 
 # Main game loop
 while True:
