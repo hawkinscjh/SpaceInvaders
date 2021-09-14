@@ -64,7 +64,6 @@ class Bullet(pygame.sprite.Sprite):
         self.x_change = x_change
         self.y_change = y_change
         self.bullet_state = 'ready'
-        self.displayBullet = False
 
     def bulletMovement(self):
         # Update enemy's X and Y-coordinate positions
@@ -72,7 +71,8 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.center = (self.pos_x, self.pos_y)
         # Bullet movement
         if self.pos_y <= 0:
-            self.pos_y = player.pos_y
+            #self.pos_y = -32
+            self.kill()
             self.bullet_state = "ready"
         if self.bullet_state == "fire":
             self.fire()
@@ -89,10 +89,6 @@ class Bullet(pygame.sprite.Sprite):
 
     def fire(self):
         if self.bullet_state == "ready":
-            bulletGroup.draw(screen)
-            self.displayBullet = True
-            #print(displayBullet)
-            self.bulletMovement()
             bullet_sound = mixer.Sound('shoot.wav')
             bullet_sound.play()
             self.pos_x = player.pos_x
@@ -148,9 +144,9 @@ class GameState():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 bullet = Bullet('bullet.png', player.pos_x, player.pos_y, 0, 10)
                 bulletGroup.add(bullet)
-                #bulletGroup.draw(screen)
+                # Update display module to show screen changes
+                #pygame.display.update()
                 bullet.fire()
-                #bullet.showBullet()
     
         if player.score >= 5:
             self.state = 'game_over'
@@ -162,10 +158,8 @@ class GameState():
         #screen.blit(background, (0,0))
         player.show_score(10,10)
         playerGroup.draw(screen)
-        bullet = Bullet('bullet.png', player.pos_x, player.pos_y, 0, 10)
-        if bullet.displayBullet == True:
-            bulletGroup.draw(screen)
-            bullet.displayBullet = False
+        #bullet = Bullet('bullet.png', player.pos_x, player.pos_y, 0, 10)
+        bulletGroup.draw(screen)
         enemyGroup.draw(screen)
         
         # Update display module to show screen changes
