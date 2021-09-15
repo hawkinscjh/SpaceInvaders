@@ -71,7 +71,6 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.center = (self.pos_x, self.pos_y)
         # Bullet movement
         if self.pos_y <= 0:
-            #self.pos_y = -32
             self.kill()
             self.bullet_state = "ready"
         if self.bullet_state == "fire":
@@ -92,8 +91,7 @@ class Bullet(pygame.sprite.Sprite):
             bullet_sound = mixer.Sound('shoot.wav')
             bullet_sound.play()
             self.pos_x = player.pos_x
-            self.bullet_state = "fire"
-            
+
 
 class GameState():
     def __init__(self):
@@ -114,20 +112,13 @@ class GameState():
         pygame.display.flip()
 
     def main_game(self):
-
-        screen.blit(background, (0,0))
-
-        # Update player's X-coordinate position (movement)
-        player.playerMovement()
-
-        # Update bullet's Y-coordinate position (movement)
-        for bullet in bulletGroup:
-            bullet.bulletMovement()
         
-        # Update enemy's X and Y-coordinate positions (movement)
-        for newEnemy in enemyGroup:
-            newEnemy.enemyMovement()   
-        
+        # Draw background to screen
+        screen.blit(background, (0,0)) 
+        # Bullet
+        # Bullet image source from https://www.flaticon.com/
+        #bulletGroup = pygame.sprite.Group()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 pygame.quit()
@@ -143,10 +134,25 @@ class GameState():
                    player.x_change = 0
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 bullet = Bullet('bullet.png', player.pos_x, player.pos_y, 0, 10)
+                # Only allow one bullet being fired at a time.
+                for bullet in bulletGroup:
+                    bullet.kill()
                 bulletGroup.add(bullet)
+                bullet.bullet_state = 'fire'
+                
                 # Update display module to show screen changes
-                #pygame.display.update()
-                bullet.fire()
+                
+ 
+        # Update player's X-coordinate position (movement)
+        player.playerMovement()
+
+        # Up date bullet's Y-coordinate position (movement)
+        for bullet in bulletGroup:
+            bullet.bulletMovement()
+        
+        # Update enemy's X and Y-coordinate positions (movement)
+        for newEnemy in enemyGroup:
+            newEnemy.enemyMovement()  
     
         if player.score >= 5:
             self.state = 'game_over'
@@ -155,10 +161,8 @@ class GameState():
             self.state = 'game_over'
 
         # Drawing
-        #screen.blit(background, (0,0))
         player.show_score(10,10)
         playerGroup.draw(screen)
-        #bullet = Bullet('bullet.png', player.pos_x, player.pos_y, 0, 10)
         bulletGroup.draw(screen)
         enemyGroup.draw(screen)
         
@@ -201,8 +205,6 @@ pygame.init()
 clock = pygame.time.Clock()
 game_state = GameState()
 
-global bullet
-
 # Game screen
 screen_width =  800
 screen_height = 600
@@ -232,10 +234,8 @@ playerGroup.add(player)
 
 # Bullet
 # Bullet image source from https://www.flaticon.com/
-#bulletPic = pygame.image.load('bullet.png')
 bullet = Bullet('bullet.png', player.pos_x, player.pos_y, 0, 10)
 bulletGroup = pygame.sprite.Group()
-#for bullet in range(10):
 
 # Enemy
 # Enemy image source from https://www.flaticon.com/
