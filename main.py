@@ -1,6 +1,20 @@
-import pygame, sys, random, math
+# Future changes to make:
+# (1) Have enemies spawn and move uniformly
+# (2) --Completed -- When all enemies are defeated, move on to Level 2 -- Completed --
+# (3) Make Level 2 slightly harder than Level 1
+# (4) After Level 2, move on to Level 3
+# (5) Make Level 3 a boss battle of some kind
+# (6) -- Completed -- Implement a pause feature -- Completed --
+# (7) Improve points: Maybe double points for 3 hits without a miss?
+# (8) Allow enemies to randomly drop bombs
+# (9) A way to track lives (3 lives is typical, then game over)
+
+import pygame, sys
 # Mixer is used for music
 from pygame import mixer
+import sys
+import random
+import math
 
 
 class Player(pygame.sprite.Sprite):
@@ -115,9 +129,6 @@ class GameState():
         
         # Draw background to screen
         screen.blit(background, (0,0)) 
-        # Bullet
-        # Bullet image source from https://www.flaticon.com/
-        #bulletGroup = pygame.sprite.Group()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
@@ -138,10 +149,7 @@ class GameState():
                 for bullet in bulletGroup:
                     bullet.kill()
                 bulletGroup.add(bullet)
-                bullet.bullet_state = 'fire'
-                
-                # Update display module to show screen changes
-                
+                bullet.bullet_state = 'fire'                
  
         # Update player's X-coordinate position (movement)
         player.playerMovement()
@@ -152,13 +160,65 @@ class GameState():
         
         # Update enemy's X and Y-coordinate positions (movement)
         for newEnemy in enemyGroup:
-            newEnemy.enemyMovement()  
+            newEnemy.enemyMovement()
+            # Game Over
+            if newEnemy.pos_y > 440:
+                self.state = 'game_over'
     
-        if player.score >= 5:
-            self.state = 'game_over'
-        # Game Over
-        if newEnemy.pos_y > 440:
-            self.state = 'game_over'
+        if player.score >= 2:
+            self.state = 'level_2_intro'           
+
+        # Drawing
+        player.show_score(10,10)
+        playerGroup.draw(screen)
+        bulletGroup.draw(screen)
+        enemyGroup.draw(screen)
+        
+        # Update display module to show screen changes
+        pygame.display.update()
+
+    def level_2(self):
+        
+        # Draw background to screen
+        screen.blit(background, (0,0)) 
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+                self.state = 'paused'
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
+                player.x_change = -8
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
+                player.x_change = 8
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                   player.x_change = 0
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                bullet = Bullet('bullet.png', player.pos_x, player.pos_y, 0, 10)
+                # Only allow one bullet being fired at a time.
+                for bullet in bulletGroup:
+                    bullet.kill()
+                bulletGroup.add(bullet)
+                bullet.bullet_state = 'fire'                
+ 
+        # Update player's X-coordinate position (movement)
+        player.playerMovement()
+
+        # Up date bullet's Y-coordinate position (movement)
+        for bullet in bulletGroup:
+            bullet.bulletMovement()
+        
+        # Update enemy's X and Y-coordinate positions (movement)
+        for newEnemy in enemyGroup:
+            newEnemy.enemyMovement()
+            # Game Over
+            if newEnemy.pos_y > 440:
+                self.state = 'game_over'
+    
+        if player.score >= 15:
+            self.state = 'you_won'           
 
         # Drawing
         player.show_score(10,10)
@@ -177,7 +237,7 @@ class GameState():
 
         # Drawing
         screen.blit(background, (0,0))
-        screen.blit(over_text, (screen_width/2 - 118, screen_height/2 - 40))
+        screen.blit(over_text, (screen_width/2, screen_height/2))
         pygame.display.flip()
 
     def paused(self):
@@ -187,7 +247,32 @@ class GameState():
                 sys.exit()
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_p:
                 self.state = 'main_game'
-        screen.blit(pause_text, (screen_width/2 - 118, screen_height/2 - 40))
+        screen.blit(pause_text, (screen_width/2, screen_height/2))
+        pygame.display.flip()
+
+    def you_won(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                pygame.quit()
+                sys.exit()
+
+        # Drawing
+        screen.blit(background, (0,0))
+        screen.blit(won_text, (screen_height/2, screen_width/2))
+        pygame.display.flip()
+
+    def level_2_intro(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN or (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE):
+                self.state = 'level_2'
+
+        # Drawing
+        screen.blit(background, (0,0))
+        screen.blit(level_2_text, (screen_width/2 - 118, screen_height/2 - 40))
+
         pygame.display.flip()
 
     def state_manager(self):
@@ -199,6 +284,12 @@ class GameState():
             self.game_over()
         if self.state == 'paused':
             self.paused()
+        if self.state == 'you_won':
+            self.you_won()
+        if self.state == 'level_2_intro':
+            self.level_2_intro()
+        if self.state == 'level_2':
+            self.level_2()
 
 # General setup
 pygame.init()
@@ -225,6 +316,8 @@ center_font = pygame.font.Font('freesansbold.ttf', 64)
 ready_text = center_font.render("READY", True, (255, 255, 255))
 over_text = center_font.render("GAME OVER", True, (255, 255, 255))
 pause_text = center_font.render("PAUSED", True, (255, 255, 255))
+won_text = center_font.render("YOU WON", True, (255, 255, 255))
+level_2_text = center_font.render("Level 2", True, (255, 255, 255))
 
 # Player
 # Player image source from https://www.flaticon.com/
@@ -241,8 +334,18 @@ bulletGroup = pygame.sprite.Group()
 # Enemy image source from https://www.flaticon.com/
 enemyGroup = pygame.sprite.Group()
 x = 32
-for newEnemy in range(6):
+for newEnemy in range(5):
     newEnemy = Enemy('enemy.png', 32 + x, 32, 8, 40)
+    enemyGroup.add(newEnemy)
+    x += 96
+x = 32
+for newEnemy in range(5):
+    newEnemy = Enemy('enemy.png', 32 + x, 96, 8, 40)
+    enemyGroup.add(newEnemy)
+    x += 96
+x = 32
+for newEnemy in range(5):
+    newEnemy = Enemy('enemy.png', 32 + x, 160, 8, 40)
     enemyGroup.add(newEnemy)
     x += 96
 
