@@ -19,7 +19,7 @@ import math
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, picture_path, pos_x, pos_y, x_change, score=0):
+    def __init__(self, picture_path, pos_x, pos_y, x_change, score=0, lives=3):
         super().__init__()
         self.image = pygame.image.load(picture_path)
         self.rect = self.image.get_rect()
@@ -28,6 +28,7 @@ class Player(pygame.sprite.Sprite):
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.score = score
+        self.lives = lives
 
     def playerMovement(self):
         self.pos_x += self.x_change
@@ -55,18 +56,34 @@ class Enemy(pygame.sprite.Sprite):
         self.x_change = x_change
         self.y_change = y_change
 
-    def enemyMovement(self, x_change):
+    def enemyMovement(self):
         # Update enemy's X and Y-coordinate positions
         self.pos_x += self.x_change
         self.rect.center = (self.pos_x, self.pos_y)
         # Create boundaries to keep enemy from moving off screen
         if self.pos_x <= 32:
-            self.x_change = self.x_change
+            self.x_change = -self.x_change
             self.pos_y += self.y_change
         elif self.pos_x >= 768:
-            self.x_change = -1*self.x_change
+            self.x_change = -self.x_change
             self.pos_y += self.y_change
 
+    def spawnEnemies_1(self):
+        x = 32
+        for newEnemy in range(5):
+            newEnemy = Enemy('enemy.png', 32 + x, 32, 4, 40)
+            enemyGroup.add(newEnemy)
+            x += 96
+        x = 32
+        for newEnemy in range(5):
+            newEnemy = Enemy('enemy.png', 32 + x, 96, 4, 40)
+            enemyGroup.add(newEnemy)
+            x += 96
+        x = 32
+        for newEnemy in range(5):
+            newEnemy = Enemy('enemy.png', 32 + x, 160, 4, 40)
+            enemyGroup.add(newEnemy)
+            x += 96
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, picture_path, pos_x, pos_y, x_change, y_change):
@@ -147,14 +164,27 @@ class GameState():
                 player.x_change = 8
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                   player.x_change = 0
+                    player.x_change = 0
+            # Press R to restart the game
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+                enemyGroup.empty()
+                bulletGroup.empty()
+                playerGroup.empty()
+                addPlayer()
+                addEnemies_1()
+                playerGroup.draw(screen)
+                bulletGroup.draw(screen)
+                enemyGroup.draw(screen)
+                player.score = 0
+                self.level_tracker = 1
+                self.state = 'intro'
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 bullet = Bullet('bullet.png', player.pos_x, player.pos_y, 0, 10)
                 # Only allow one bullet being fired at a time.
                 for bullet in bulletGroup:
                     bullet.kill()
                 bulletGroup.add(bullet)
-                bullet.bullet_state = 'fire'                
+                bullet.bullet_state = 'fire'                   
  
         # Update player's X-coordinate position (movement)
         player.playerMovement()
@@ -165,10 +195,28 @@ class GameState():
         
         # Update enemy's X and Y-coordinate positions (movement)
         for newEnemy in enemyGroup:
-            newEnemy.enemyMovement(4)
+            newEnemy.enemyMovement()
+
             # Game Over
             if newEnemy.pos_y > 440:
-                self.state = 'game_over'
+                print(player.lives)
+                if player.lives == 1:
+                    self.state = 'game_over'
+                else:
+                    player.lives -= 1
+                    enemyGroup.empty()
+                    bulletGroup.empty()
+                    playerGroup.empty()
+                    addPlayer()
+                    addEnemies_1()
+                    playerGroup.draw(screen)
+                    bulletGroup.draw(screen)
+                    enemyGroup.draw(screen)
+                    player.score = 0
+                    self.level_tracker = 1
+                    self.state = 'intro'
+        # Need to reset the level. Right now it just stays in the same state, so of course my lives run out
+        # quickly and game over.
     
         if player.score >= 15:
             self.state = 'level_2_intro'           
@@ -206,7 +254,20 @@ class GameState():
                 player.x_change = 8
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                   player.x_change = 0
+                    player.x_change = 0
+            # Press R to restart the game
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+                enemyGroup.empty()
+                bulletGroup.empty()
+                playerGroup.empty()
+                addPlayer()
+                addEnemies_1()
+                playerGroup.draw(screen)
+                bulletGroup.draw(screen)
+                enemyGroup.draw(screen)
+                player.score = 0
+                self.level_tracker = 1
+                self.state = 'intro'
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 bullet = Bullet('bullet.png', player.pos_x, player.pos_y, 0, 12)
                 # Only allow one bullet being fired at a time.
@@ -224,11 +285,25 @@ class GameState():
         
         # Update enemy's X and Y-coordinate positions (movement)
         for newEnemy in enemyGroup_2:
-            newEnemy.enemyMovement(8)
+            newEnemy.enemyMovement()
             # Game Over
             if newEnemy.pos_y > 440:
-                self.state = 'game_over'
-    
+                if player.lives == 1:
+                    self.state = 'game_over'
+                else:
+                    player.lives -= 1
+                    enemyGroup.empty()
+                    bulletGroup.empty()
+                    playerGroup.empty()
+                    addPlayer()
+                    addEnemies_1()
+                    playerGroup.draw(screen)
+                    bulletGroup.draw(screen)
+                    enemyGroup.draw(screen)
+                    player.score = 0
+                    self.level_tracker = 1
+                    self.state = 'intro'
+        
         if player.score >= 30:
             self.state = 'you_won'           
 
@@ -333,12 +408,16 @@ over_text = center_font.render("GAME OVER", True, (255, 255, 255))
 pause_text = center_font.render("PAUSED", True, (255, 255, 255))
 won_text = center_font.render("YOU WON", True, (255, 255, 255))
 level_2_text = center_font.render("Level 2", True, (255, 255, 255))
+score_font = pygame.font.Font('freesansbold.ttf', 32)
 
 # Player
 # Player image source from https://www.flaticon.com/
-player = Player('player.png', 370, 568, 0)
 playerGroup = pygame.sprite.Group()
-playerGroup.add(player)
+def addPlayer():
+    global player
+    player = Player('player.png', 370, 568, 0)
+    playerGroup.add(player)
+addPlayer()
 
 # Bullet
 # Bullet image source from https://www.flaticon.com/
@@ -347,23 +426,26 @@ bulletGroup = pygame.sprite.Group()
 
 # Enemy for Level 1
 # Enemy image source from https://www.flaticon.com/
-global enemyGroup
+#global enemyGroup
 enemyGroup = pygame.sprite.Group()
-x = 32
-for newEnemy in range(5):
-    newEnemy = Enemy('enemy.png', 32 + x, 32, 4, 40)
-    enemyGroup.add(newEnemy)
-    x += 96
-x = 32
-for newEnemy in range(5):
-    newEnemy = Enemy('enemy.png', 32 + x, 96, 4, 40)
-    enemyGroup.add(newEnemy)
-    x += 96
-x = 32
-for newEnemy in range(5):
-    newEnemy = Enemy('enemy.png', 32 + x, 160, 4, 40)
-    enemyGroup.add(newEnemy)
-    x += 96
+def addEnemies_1():
+    x = 32
+    for newEnemy in range(5):
+        newEnemy = Enemy('enemy.png', 32 + x, 32, 4, 40)
+        enemyGroup.add(newEnemy)
+        x += 64
+    x = 32
+    for newEnemy in range(5):
+        newEnemy = Enemy('enemy.png', 32 + x, 96, 4, 40)
+        enemyGroup.add(newEnemy)
+        x += 64
+    x = 32
+    for newEnemy in range(5):
+        newEnemy = Enemy('enemy.png', 32 + x, 160, 4, 40)
+        enemyGroup.add(newEnemy)
+        x += 64
+
+addEnemies_1()
 
 # Enemy for Level 2
 global enemyGroup_2
@@ -372,23 +454,22 @@ x = 32
 for newEnemy in range(5):
     newEnemy = Enemy('enemy.png', 32 + x, 32, 6, 80)
     enemyGroup_2.add(newEnemy)
-    x += 96
+    x += 64
 x = 32
 for newEnemy in range(5):
     newEnemy = Enemy('enemy.png', 32 + x, 96, 6, 80)
     enemyGroup_2.add(newEnemy)
-    x += 96
+    x += 64
 x = 32
 for newEnemy in range(5):
     newEnemy = Enemy('enemy.png', 32 + x, 160, 6, 80)
     enemyGroup_2.add(newEnemy)
-    x += 96
-
-# Score
-score_value = 0
-score_font = pygame.font.Font('freesansbold.ttf', 32)
+    x += 64
 
 # Main game loop
-while True:
-    game_state.state_manager()
-    clock.tick(60)
+def main():
+    while True:
+        game_state.state_manager()
+        clock.tick(60)
+
+main()
