@@ -100,7 +100,6 @@ class Bullet(pygame.sprite.Sprite):
         if pygame.sprite.groupcollide(enemyGroup, bulletGroup, True, True):
             player.score += 1
             # Collision
-            # Reset bullet_state to ready, increase score, and respawn enemy
             explosion_sound = mixer.Sound('invaderkilled.wav')
             if not game_state.muted:
                 explosion_sound.play()
@@ -271,7 +270,7 @@ class GameState():
                     bullet.kill()
                 bulletGroup.add(bullet)
                 bullet.bullet_state = 'fire'
-                if not self.muted:
+                if not game_state.muted:
                     bullet_sound = mixer.Sound('shoot.wav')
                     bullet_sound.play()
             # Mute the game
@@ -286,7 +285,7 @@ class GameState():
         # Deleted all sprites, reset player position, respawn enemies, 
         # reset score and level, go back to intro
         enemyGroup.empty()
-        enemyGroup_2.empty()
+        enemyGroup_2.empty()        
         enemyGroup_3.empty()
         bulletGroup.empty()
         player.pos_x = 370
