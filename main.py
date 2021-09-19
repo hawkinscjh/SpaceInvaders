@@ -102,8 +102,9 @@ class Bullet(pygame.sprite.Sprite):
             player.score += 1
             # Collision
             # Reset bullet_state to ready, increase score, and respawn enemy
-            #explosion_sound = mixer.Sound('invaderkilled.wav')
-            #explosion_sound.play()
+            explosion_sound = mixer.Sound('invaderkilled.wav')
+            if not game_state.muted:
+                explosion_sound.play()
             self.pos_y = player.pos_y
             self.bullet_state = "ready"
 
@@ -115,9 +116,10 @@ class Bullet(pygame.sprite.Sprite):
 
 
 class GameState():
-    def __init__(self, level_tracker=1):
+    def __init__(self):
         self.state = 'intro'
         self.level_tracker = 1
+        self.muted = False
 
     def level_1(self):
 
@@ -127,39 +129,13 @@ class GameState():
         # Draw background to screen
         screen.blit(background, (0,0)) 
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
-                self.state = 'paused'
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
-                player.x_change = -8
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
-                player.x_change = 8
-            if event.type == pygame.KEYUP:
-                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                    player.x_change = 0
-            # Press R to restart the game
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
-                self.reset()
-            # Mute the game
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_m:
-                mixer.music.pause()
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_n:
-                mixer.music.unpause()
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                bullet = Bullet('bullet.png', player.pos_x, player.pos_y, 0, 10)
-                # Only allow one bullet being fired at a time.
-                for bullet in bulletGroup:
-                    bullet.kill()
-                bulletGroup.add(bullet)
-                bullet.bullet_state = 'fire'                   
+        # Setup keyboard button assignments
+        self.buttons()                 
  
         # Update player's X-coordinate position (movement)
         player.playerMovement()
 
-        # Up date bullet's Y-coordinate position (movement)
+        # Update bullet's Y-coordinate position (movement)
         for bullet in bulletGroup:
             bullet.bulletMovement(enemyGroup, bulletGroup)
         
@@ -200,34 +176,13 @@ class GameState():
         # Draw background to screen
         screen.blit(background, (0,0)) 
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
-                self.state = 'paused'
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
-                player.x_change = -8
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
-                player.x_change = 8
-            if event.type == pygame.KEYUP:
-                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                    player.x_change = 0
-            # Press R to restart the game
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
-                self.reset()
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                bullet = Bullet('bullet.png', player.pos_x, player.pos_y, 0, 12)
-                # Only allow one bullet being fired at a time.
-                for bullet in bulletGroup:
-                    bullet.kill()
-                bulletGroup.add(bullet)
-                bullet.bullet_state = 'fire'                
+        # Setup keyboard button assignments
+        self.buttons()             
  
         # Update player's X-coordinate position (movement)
         player.playerMovement()
 
-        # Up date bullet's Y-coordinate position (movement)
+        # Update bullet's Y-coordinate position (movement)
         for bullet in bulletGroup:
             bullet.bulletMovement(enemyGroup_2, bulletGroup)
         
@@ -254,6 +209,40 @@ class GameState():
         
         # Update display module to show screen changes
         pygame.display.update()
+
+    def buttons(self):
+        global bullet
+        bullet = Bullet('bullet.png', player.pos_x, player.pos_y, 0, 10)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+                self.state = 'paused'
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
+                player.x_change = -8
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
+                player.x_change = 8
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                    player.x_change = 0
+            # Press R to restart the game
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+                self.reset()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                # Only allow one bullet being fired at a time.
+                #bullet = Bullet('bullet.png', player.pos_x, player.pos_y, 0, 10)
+                for bullet in bulletGroup:
+                    bullet.kill()
+                bulletGroup.add(bullet)
+                bullet.bullet_state = 'fire'  
+            # Mute the game
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_m:
+                mixer.music.pause()
+                self.muted = True
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_n:
+                mixer.music.unpause()
+                self.muted = False
 
     def reset(self):
         enemyGroup.empty()
@@ -408,7 +397,8 @@ addPlayer()
 
 # Bullet
 # Bullet image source from https://www.flaticon.com/
-bullet = Bullet('bullet.png', player.pos_x, player.pos_y, 0, 10)
+#global bullet
+#bullet = Bullet('bullet.png', player.pos_x, player.pos_y, 0, 10)
 bulletGroup = pygame.sprite.Group()
 
 # Enemy for Level 1
