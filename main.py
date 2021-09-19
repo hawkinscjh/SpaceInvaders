@@ -1,12 +1,12 @@
 # Future changes to make:
 # (1) -- Completed -- Have enemies spawn and move uniformly -- Completed --
 # (2) --Completed -- When all enemies are defeated, move on to Level 2 -- Completed --
-# (3) -- Completed --Make Level 2 slightly harder than Level 1 -- Completed --
-# (4) After Level 2, move on to Level 3
-# (5) Make Level 3 a boss battle of some kind
+# (3) -- Completed -- Make Level 2 slightly harder than Level 1 -- Completed --
+# (4) -- Completed -- After Level 2, move on to Level 3 -- Completed --
+# (5) Make Level 3 a boss battle of some kind?
 # (6) -- Completed -- Implement a pause feature -- Completed --
 # (7) Improve points: Maybe double points for 3 hits without a miss?
-# (8) Allow enemies to randomly drop bombs
+# (8) Allow enemies to randomly drop bombs? Could make it too hard.
 # (9) -- Completed -- A way to track lives (3 lives is typical, then game over) -- Completed --
 
 from os import spawnl
