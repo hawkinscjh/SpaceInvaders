@@ -233,7 +233,7 @@ class GameState():
                     player.lives -= 1
                     self.state = 'you_died'
         
-        if player.score >= 45:
+        if player.score >= 50:
             self.state = 'you_won'           
 
         # Drawing
@@ -507,17 +507,22 @@ enemyGroup_3 = pygame.sprite.Group()
 def addEnemies_3():
     x = 32
     for newEnemy in range(5):
-        newEnemy = Enemy('enemy.png', 32 + x, 32, 8, 80)
+        newEnemy = Enemy('enemy.png', 32 + x, 32, 6, 80)
         enemyGroup_3.add(newEnemy)
         x += 64
     x = 32
     for newEnemy in range(5):
-        newEnemy = Enemy('enemy.png', 32 + x, 96, 8, 80)
+        newEnemy = Enemy('enemy.png', 32 + x, 96, 6, 80)
         enemyGroup_3.add(newEnemy)
         x += 64
     x = 32
     for newEnemy in range(5):
-        newEnemy = Enemy('enemy.png', 32 + x, 160, 8, 80)
+        newEnemy = Enemy('enemy.png', 32 + x, 160, 6, 80)
+        enemyGroup_3.add(newEnemy)
+        x += 64
+    x = 32
+    for newEnemy in range(5):
+        newEnemy = Enemy('enemy.png', 32 + x, 224, 6, 80)
         enemyGroup_3.add(newEnemy)
         x += 64
 addEnemies_3()
